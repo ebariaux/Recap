@@ -21,13 +21,11 @@ import SwiftUI
 /// - Note: The releases are displayed in reverse chronological order, with the most recent release shown first.
 public struct RecapScreen<LeadingView: View, TrailingView: View>: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.backgroundStyle) private var backgroundStyle
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.recapScreenStartIndex) private var startIndex
     @Environment(\.recapScreenSelectedPageIndicatorColor) private var selectedPageIndicatorColor
     @Environment(\.recapScreenDeselectedPageIndicatorColor) private var deselectedPageIndicatorColor
     @Environment(\.recapScreenDismissButtonStyle) private var dismissButtonStyle
-    @Environment(\.recapScreenDismissButtonTitle) private var dismissButtonTitle
     @Environment(\.recapScreenDismissAction) private var dismissAction
 
     @State private var originalSelectedPageIndicatorColor: UIColor?
@@ -62,20 +60,19 @@ public struct RecapScreen<LeadingView: View, TrailingView: View>: View {
                     .tag(self.tabIndex(from: .trailingView))
             }
             .tabViewStyle(.page(indexDisplayMode: self.releases.count > 1 ? .always : .never))
-            .background(self.derivedBackgroundStyle)
+            .withBackgroundStyle()
 
             Button(action: {
                 dismissAction?() ?? dismiss()
             }, label: {
                 HStack {
                     Spacer(minLength: 0.0)
-
-                    Text(self.dismissButtonTitle)
-                        .font(.system(.title3, weight: .bold))
-                        .padding(8.0)
-                        .padding(.vertical, 4.0)
-                        .padding(.horizontal, 16.0)
-                        .foregroundStyle(dismissButtonStyle.foregroundStyle)
+                    
+                    if #available(iOS 16, *) {
+                        DismissButtonLabel()
+                    } else {
+                        DismissButtonLabelLegacy()
+                    }
 
                     Spacer(minLength: 0.0)
                 }
@@ -87,7 +84,7 @@ public struct RecapScreen<LeadingView: View, TrailingView: View>: View {
             .padding(.horizontal, 40.0)
             .foregroundStyle(.primary)
             .withBottomPaddingIfNoSafeArea()
-            .background(self.derivedBackgroundStyle)
+            .withBackgroundStyle()
             .onAppear(perform: {
                 self.selectedIndex = self.tabIndex(from: self.startIndex)
             })
@@ -129,10 +126,40 @@ public extension RecapScreen where LeadingView == EmptyView, TrailingView == Emp
 
 // MARK: Private
 
-private extension RecapScreen {
-    var displayedReleases: [Release] {
-        self.releases.reversed()
+@available(iOS 16, *)
+private struct DismissButtonLabel: View {
+    @Environment(\.recapScreenDismissButtonStyle) private var dismissButtonStyle
+    @Environment(\.recapScreenDismissButtonTitle) private var dismissButtonTitle
+
+    var body: some View {
+        Text(self.dismissButtonTitle)
+            .font(.system(.title3, weight: .bold))
+            .padding(8.0)
+            .padding(.vertical, 4.0)
+            .padding(.horizontal, 16.0)
+            .foregroundStyle(dismissButtonStyle.foregroundStyle)
     }
+}
+
+@available(iOS, deprecated: 16.0, renamed: "DismissButtonLabel")
+private struct DismissButtonLabelLegacy: View {
+    @Environment(\.recapScreenDismissButtonStyle) private var dismissButtonStyle
+    @Environment(\.recapScreenDismissButtonTitleKey) private var dismissButtonTitle
+
+    var body: some View {
+        Text(self.dismissButtonTitle)
+            .font(.title3).bold()
+            .padding(8.0)
+            .padding(.vertical, 4.0)
+            .padding(.horizontal, 16.0)
+            .foregroundStyle(dismissButtonStyle.foregroundStyle)
+    }
+}
+
+@available(iOS 16, *)
+private struct BackgroundStyleModifier: ViewModifier {
+    @Environment(\.backgroundStyle) private var backgroundStyle
+    @Environment(\.colorScheme) private var colorScheme
 
     var derivedBackgroundStyle: AnyShapeStyle {
         if let backgroundStyle {
@@ -140,6 +167,34 @@ private extension RecapScreen {
         } else {
             AnyShapeStyle(self.colorScheme == .dark ? Color.black : Color.white)
         }
+    }
+
+    func body(content: Content) -> some View {
+        content.background(derivedBackgroundStyle)
+    }
+}
+
+private struct ColorSchemeModifier: ViewModifier {
+    @Environment(\.colorScheme) private var colorScheme
+    
+    func body(content: Content) -> some View {
+        content.background(AnyShapeStyle(self.colorScheme == .dark ? Color.black : Color.white))
+    }
+}
+
+private extension View {
+    @ViewBuilder func withBackgroundStyle() -> some View {
+        if #available(iOS 16, *) {
+            modifier(BackgroundStyleModifier())
+        } else {
+            modifier(ColorSchemeModifier())
+        }
+    }
+}
+
+private extension RecapScreen {
+    var displayedReleases: [Release] {
+        self.releases.reversed()
     }
 
     func setupAppearanceChanges() {

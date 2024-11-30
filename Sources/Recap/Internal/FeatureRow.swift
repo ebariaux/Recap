@@ -35,7 +35,11 @@ private extension FeatureRow {
         switch self.iconFillMode {
 
         case .gradient:
-            AnyShapeStyle(self.feature.color.gradient)
+            if #available(iOS 16, *) {
+                AnyShapeStyle(self.feature.color.gradient)
+            } else {
+                AnyShapeStyle(self.feature.color)
+            }
 
         case .solid:
             AnyShapeStyle(self.feature.color)

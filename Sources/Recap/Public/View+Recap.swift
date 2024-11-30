@@ -34,6 +34,7 @@ public extension View {
     }
 
     /// Configures a custom title for the `RecapScreen` dismiss button.
+    @available(iOS 16, *)
     func recapScreenDismissButtonTitle(_ title: LocalizedStringResource) -> some View {
         self.environment(\.recapScreenDismissButtonTitle, title)
     }
@@ -55,11 +56,13 @@ public extension View {
     }
 
     /// Configures a background `ShapeStyle` for the `RecapScreen`.
+    @available(iOS 16, *)
     func recapScreenBackground(_ style: AnyShapeStyle?) -> some View {
         self.environment(\.backgroundStyle, style)
     }
 
     /// Configures a background `Color` for the `RecapScreen`.
+    @available(iOS 16, *)
     func recapScreenBackground(_ color: Color) -> some View {
         self.environment(\.backgroundStyle, AnyShapeStyle(color))
     }
@@ -132,15 +135,30 @@ internal extension EnvironmentValues {
 
     // MARK: DismissButtonTitle
 
+    @available(iOS 16, *)
     var recapScreenDismissButtonTitle: LocalizedStringResource {
         get { self[DismissButtonLocalizedKeyTitle.self] }
         set { self[DismissButtonLocalizedKeyTitle.self] = newValue }
     }
 
+    @available(iOS 16, *)
     private struct DismissButtonLocalizedKeyTitle: @preconcurrency EnvironmentKey {
         @MainActor static let defaultValue = LocalizedStringResource(
             "RECAP.SCREEN.DISMISS.BUTTON.TITLE",
             bundle: .atURL(Bundle.module.bundleURL)
+        )
+    }
+
+    @available(iOS, deprecated: 16, renamed: "recapScreenDismissButtonTitle")
+    var recapScreenDismissButtonTitleKey: LocalizedStringKey {
+        get { self[DismissButtonLocalizedKeyTitleKey.self] }
+        set { self[DismissButtonLocalizedKeyTitleKey.self] = newValue }
+    }
+
+    @available(iOS, deprecated: 16, renamed: "DismissButtonLocalizedKeyTitle")
+    private struct DismissButtonLocalizedKeyTitleKey: @preconcurrency EnvironmentKey {
+        @MainActor static let defaultValue = LocalizedStringKey(
+            "RECAP.SCREEN.DISMISS.BUTTON.TITLE"
         )
     }
 
