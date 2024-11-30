@@ -7,7 +7,7 @@ let package = Package(
     name: "Recap",
     defaultLocalization: "en",
     platforms: [
-        .iOS(.v16), .macCatalyst(.v16)
+        .iOS(.v15), .macCatalyst(.v15)
     ],
     products: [
         .library(
