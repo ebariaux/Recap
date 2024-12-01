@@ -8,6 +8,12 @@
             "state" : "translated",
             "value" : "Continue"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer"
+          }
         }
       }
     }
