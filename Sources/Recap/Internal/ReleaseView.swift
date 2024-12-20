@@ -17,6 +17,7 @@ struct ReleaseView: View {
                 .multilineTextAlignment(.center)
                 .padding(.leading, self.padding.leading)
                 .padding(.trailing, self.padding.trailing)
+                .accessibilityIdentifier("Recap release title")
 
             ScrollView {
                 VStack(alignment: .leading, spacing: self.itemSpacing) {
